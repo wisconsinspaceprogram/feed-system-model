@@ -29,7 +29,7 @@ class Engine(Model):
     cr = A_cc / A_t  # Contraction ratio
     eps = A_e / A_t  # Expansion ratio (epsilon)
 
-    __slots__ = ("engine",)
+    __slots__ = ("engine", "v_e")
 
     def __init__(self, name: str):
         super().__init__(name)
@@ -97,5 +97,6 @@ class Engine(Model):
 
         # Update downstream interfaces
         self.interfaces["downstream_mass_flow_rate"] = m_dot_e
+        self.v_e = v_e
 
         return [m_dot_e - m_dot_th, upstream_mass_flow_rate - m_dot_e]
