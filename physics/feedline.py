@@ -10,22 +10,33 @@ class Feedline(Model):
 
     def __init__(self, name: str, flow_coefficient: float) -> None:
         super().__init__(name)
-        self.inputs = {"mass_flow_rate": 0.0, "upstream_pressure": 0.0}
-        self.outputs = {"mass_flow_rate": 0.0, "downstream_pressure": 0.0}
+        self.interfaces = {"upstream_mass_flow_rate": 0.0, "downstream_mass_flow_rate": 0.0, "upstream_pressure": 0.0,
+                           "downstream_pressure": 0.0}
         self.flow_coefficient = flow_coefficient
 
-    def calculate(self, time: float, dt: float | None = None) -> None:
+    def try_oneway_interface(self, other: "Model"):
+        """
+        Attempt to connect the feedline to another model's interface.
+        This method checks if the other model has compatible interfaces and connects them if possible.
+        """
+        if "downstream_mass_flow_rate" in self.interfaces and "upstream_mass_flow_rate" in other.interfaces:
+            other.interfaces["upstream_mass_flow_rate"] = self.interfaces.get("downstream_mass_flow_rate", 0.0)
+        if "downstream_pressure" in self.interfaces and "upstream_pressure" in other.interfaces:
+            other.interfaces["upstream_pressure"] = self.interfaces.get("downstream_pressure", 0.0)
+
+    def calculate(self, time: float, dt: float | None = None) -> list[float]:
         """
         Calculate the state of the feedline at the given time and time step.
         Incompressible fluids are assumed at the moment.
         """
-        upstream_pressure = self.inputs.get("upstream_pressure", 0.0)
+        upstream_pressure = self.interfaces.get("upstream_pressure", 0.0)
         # assumes incompressible liquid
-        self.outputs["downstream_pressure"] = self.flow_coefficient * upstream_pressure
+        self.interfaces["downstream_pressure"] = self.flow_coefficient * upstream_pressure
 
         # Conserve mass
-        self.outputs["mass_flow_rate"] = self.inputs["mass_flow_rate"]
+        self.interfaces["downstream_mass_flow_rate"] = self.interfaces["upstream_mass_flow_rate"]
 
+        return []
 
     def __repr__(self) -> str:
         return f"<Feedline {self.name}: flow_coefficient={self.flow_coefficient}>"

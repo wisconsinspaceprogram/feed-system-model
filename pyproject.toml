@@ -2,4 +2,6 @@
 name = "feed-system-model-try-2"
 version = "0.1.0"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "scipy-stubs~=1.18.1",
+]

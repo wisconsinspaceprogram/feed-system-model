@@ -8,8 +8,7 @@ class Valve(Model):
 
     def __init__(self, name: str, is_open: bool = True) -> None:
         super().__init__(name)
-        self.inputs = {"mass_flow_rate": 0.0}
-        self.outputs = {"mass_flow_rate": 0.0}
+        self.interfaces = {"upstream_mass_flow_rate": 0.0, "downstream_mass_flow_rate": 0.0}
         self.is_open = is_open
 
     def open(self):
@@ -21,16 +20,25 @@ class Valve(Model):
     def toggle(self) -> None:
         self.is_open = not self.is_open
 
-    def calculate(self, time: float, dt: float | None = None) -> None:
+    def try_oneway_interface(self, other: "Model"):
+        """
+        Attempt to connect the valve to another model's interface.
+        This method checks if the other model has compatible interfaces and connects them if possible.
+        """
+        if "downstream_mass_flow_rate" in self.interfaces and "upstream_mass_flow_rate" in other.interfaces:
+            other.interfaces["upstream_mass_flow_rate"] = self.interfaces.get("downstream_mass_flow_rate", 0.0)
+    def calculate(self, time: float, dt: float | None = None) -> list[float]:
         """
         Calculate the state of the valve at the given time and time step.
         If the valve is open, it allows flow; if closed, it blocks flow.
         """
         if self.is_open:
-            # inputs.get should never fail
-            self.outputs["mass_flow_rate"] = self.inputs.get("mass_flow_rate", 0.0)
+            # interfaces.get should never fail
+            self.interfaces["downstream_mass_flow_rate"] = self.interfaces.get("upstream_mass_flow_rate", 0.0)
         else:
-            self.outputs["mass_flow_rate"] = 0.0
+            self.interfaces["downstream_mass_flow_rate"] = 0.0
+
+        return []
 
     def __repr__(self) -> str:
         state = "open" if self.is_open else "closed"
