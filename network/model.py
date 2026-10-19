@@ -50,18 +50,19 @@ class Model(Node):
             if connection not in processed_list:
                 processed_list.append(connection)
                 if isinstance(connection, Model):
+                    self.try_oneway_interface(connection)
+
                     residuals.extend(connection.calculate_all(time, dt, processed_list))
 
                     """for (name, value) in self.interfaces.items():
                         if name in connection.interfaces:
                             connection.interfaces[name] = value
                             print(f"setting interfaces on \"{connection.name}\" {name}: {value}")"""
-                    self.try_oneway_interface(connection)
 
         return residuals
 
     def calculate_residuals(self, x0: list[float]) -> list[float]:
-        return self.calculate_all(0.0, x0=x0)
+        return self.calculate_all(0.0, x0=x0, processed_list=[])
 
     def snapshot_graph(self, processed_list: list = []) -> "ModelSnapshot":
         snapshot = ModelSnapshot(self)

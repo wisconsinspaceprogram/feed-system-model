@@ -1,3 +1,5 @@
+import numpy as np
+
 from network.model import Model
 
 
@@ -36,7 +38,7 @@ class Valve(Model):
             # interfaces.get should never fail
             self.interfaces["downstream_mass_flow_rate"] = self.interfaces.get("upstream_mass_flow_rate", 0.0)
         else:
-            self.interfaces["downstream_mass_flow_rate"] = 0.0
+            self.interfaces["downstream_mass_flow_rate"] = np.float64(0.0)
 
         return []
 

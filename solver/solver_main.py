@@ -19,6 +19,8 @@ class Solver:
         result = least_squares(
             self.model.calculate_residuals,
             numpy.array(x0),
+            xtol=1e-8,
+            ftol=1e-8,
         )
 
         return result
